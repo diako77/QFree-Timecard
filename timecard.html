@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Q-Free | Employee Time Card</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --qred:#e52713; --qred-dark:#b81e0e; --qnavy:#1a1f2e; --qnavy2:#252b3b;
+    --qgray:#f4f4f2; --border:#dddbd6; --border-dk:#b8b4ac;
+    --text:#1a1f2e; --text-mid:#5a5f6e; --text-lt:#9098aa;
+    --green:#1a8a4a; --white:#ffffff;
+    --sans:'Barlow',sans-serif; --cond:'Barlow Condensed',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--qgray);font-family:var(--sans);color:var(--text);min-height:100vh;}
+
+  /* HEADER */
+  .header{background:var(--qnavy);border-bottom:3px solid var(--qred);position:sticky;top:0;z-index:100;}
+  .header-inner{max-width:980px;margin:0 auto;padding:0 28px;display:flex;align-items:center;justify-content:space-between;min-height:64px;}
+  .logo-area{display:flex;align-items:center;gap:18px;}
+  .qfree-logo svg{display:block;height:36px;width:auto;}
+  .doc-title{font-family:var(--cond);font-weight:600;font-size:.9rem;letter-spacing:.14em;text-transform:uppercase;color:#8a93a8;padding-left:18px;border-left:1px solid rgba(255,255,255,.13);}
+  .week-nav{display:flex;align-items:center;gap:8px;}
+  .week-nav button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff;width:30px;height:30px;border-radius:4px;cursor:pointer;font-size:1.15rem;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+  .week-nav button:hover{background:rgba(255,255,255,.18);}
+  .week-label{font-family:var(--cond);font-size:.8rem;letter-spacing:.05em;color:#9ea6b8;min-width:200px;text-align:center;}
+
+  /* MAIN */
+  .main{max-width:980px;margin:0 auto;padding:28px 24px 48px;}
+  .section-label{font-family:var(--cond);font-size:.67rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--qred);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  /* INFO CARD */
+  .info-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--qnavy);border-radius:4px;padding:22px 26px;margin-bottom:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px 24px;}
+  .field-group label{display:block;font-family:var(--cond);font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-mid);margin-bottom:5px;}
+  .field-group input,.field-group select{width:100%;border:1px solid var(--border);border-radius:3px;padding:7px 10px;font-family:var(--sans);font-size:.88rem;color:var(--text);background:#fafaf9;outline:none;transition:border-color .15s,box-shadow .15s;}
+  .field-group input:focus,.field-group select:focus{border-color:var(--qred);box-shadow:0 0 0 3px rgba(229,39,19,.08);background:#fff;}
+
+  /* TABLE CARD */
+  .table-card{background:var(--white);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+  .table-card table{width:100%;border-collapse:collapse;}
+  .table-card thead tr{background:var(--qnavy);}
+  .table-card thead th{font-family:var(--cond);font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.11em;color:#7a8498;padding:11px 12px;text-align:left;white-space:nowrap;}
+  .table-card thead th:first-child{color:#fff;}
+
+  /* Day group rows */
+  .day-group-first{border-top:1px solid var(--border);}
+  .day-group-first td{padding:8px 12px;vertical-align:middle;}
+  .day-subrow td{padding:5px 12px 5px 12px;vertical-align:middle;border-top:1px dashed #eceae6;}
+  .day-group-last{border-bottom:2px solid var(--border);}
+
+  /* Sub-row indent for day cell */
+  .day-subrow .day-cell{padding-left:24px!important;}
+
+  /* Weekend tint */
+  .row-weekend td{background:#f8f8f7!important;}
+  .row-weekend .day-label{color:var(--text-lt);}
+
+  /* Week 2 divider */
+  .week-divider td{background:var(--qnavy);padding:7px 14px!important;font-family:var(--cond);font-size:.63rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#7a8498;}
+  .week-divider td span{color:#c5cad8;}
+
+  .day-label{font-family:var(--cond);font-size:.84rem;font-weight:700;letter-spacing:.04em;color:var(--text);white-space:nowrap;}
+  .day-label .date-num{display:block;font-size:.61rem;font-weight:400;color:var(--text-lt);margin-top:1px;}
+
+  .time-input{width:104px;border:1px solid var(--border);border-radius:3px;padding:6px 7px;font-family:var(--sans);font-size:.83rem;color:var(--text);background:#fafaf9;outline:none;transition:border-color .15s,box-shadow .15s;}
+  .time-input:focus{border-color:var(--qred);box-shadow:0 0 0 3px rgba(229,39,19,.08);background:#fff;}
+
+  .lunch-input{width:60px;border:1px solid var(--border);border-radius:3px;padding:6px 6px;font-family:var(--sans);font-size:.83rem;color:var(--text);background:#fafaf9;outline:none;text-align:center;transition:border-color .15s,box-shadow .15s;}
+  .lunch-input:focus{border-color:var(--qred);box-shadow:0 0 0 3px rgba(229,39,19,.08);background:#fff;}
+
+  .type-select{width:144px;border:1px solid var(--border);border-radius:3px;padding:6px 7px;font-family:var(--cond);font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--text);background:#fafaf9;outline:none;transition:border-color .15s,box-shadow .15s;cursor:pointer;}
+  .type-select:focus{border-color:var(--qred);box-shadow:0 0 0 3px rgba(229,39,19,.08);background:#fff;}
+  .type-select.is-leave{color:#1a6ab8;border-color:#a8c4e8;background:#f0f5fc;}
+  .type-select.is-worked{color:var(--green);}
+
+  .notes-input{width:100%;border:1px solid var(--border);border-radius:3px;padding:6px 7px;font-family:var(--sans);font-size:.8rem;color:var(--text);background:#fafaf9;outline:none;transition:border-color .15s,box-shadow .15s;}
+  .notes-input:focus{border-color:var(--qred);box-shadow:0 0 0 3px rgba(229,39,19,.08);background:#fff;}
+
+  .hours-cell{font-family:var(--cond);font-size:.92rem;font-weight:700;color:var(--green);white-space:nowrap;min-width:52px;}
+  .hours-cell.zero{color:var(--border-dk);font-weight:400;}
+  .hours-cell.overtime{color:var(--qred);}
+
+  /* Row action buttons */
+  .row-actions{display:flex;gap:4px;align-items:center;white-space:nowrap;}
+  .icon-btn{background:none;border:1px solid var(--border);border-radius:3px;cursor:pointer;font-size:.68rem;padding:4px 7px;font-family:var(--cond);font-weight:700;letter-spacing:.05em;white-space:nowrap;transition:all .14s;display:inline-flex;align-items:center;gap:3px;color:var(--text-lt);}
+  .icon-btn:hover{border-color:var(--border-dk);color:var(--text);}
+  .icon-btn.btn-add{color:#1a7a44;}
+  .icon-btn.btn-add:hover{background:#e8f7ee;border-color:#1a7a44;color:#1a7a44;}
+  .icon-btn.btn-copy:hover{background:var(--qred);border-color:var(--qred);color:#fff;}
+  .icon-btn.btn-clear:hover{background:#fff3f1;border-color:var(--qred);color:var(--qred);}
+  .icon-btn.btn-del{color:#c0392b;}
+  .icon-btn.btn-del:hover{background:#fff0ee;border-color:#c0392b;color:#c0392b;}
+
+  /* TOTALS */
+  .totals-bar{background:var(--qnavy2);display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));border-top:2px solid var(--qred);}
+  .total-item{padding:15px 18px;border-right:1px solid rgba(255,255,255,.06);}
+  .total-item:last-child{border-right:none;}
+  .total-item .t-label{font-family:var(--cond);font-size:.59rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#5a6278;margin-bottom:5px;}
+  .total-item .t-value{font-family:var(--cond);font-size:1.4rem;font-weight:700;color:#fff;line-height:1;}
+  .total-item .t-value.ot{color:#f07058;}
+  .subtotals-bar{background:#1e2438;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(255,255,255,.07);}
+  .subtotals-bar .total-item{padding:10px 18px;}
+  .subtotals-bar .total-item .t-label{color:#404860;}
+  .subtotals-bar .total-item .t-value{font-size:1.05rem;color:#8a93a8;}
+
+  /* SIGNATURE */
+  .sig-card{background:var(--white);border:1px solid var(--border);border-radius:4px;padding:20px 26px;margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+  .sig-box label{display:block;font-family:var(--cond);font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-mid);margin-bottom:8px;}
+  .sig-line{width:100%;border:none;border-bottom:2px solid var(--border-dk);background:transparent;font-family:var(--sans);font-size:.9rem;color:var(--text);padding:5px 2px;outline:none;transition:border-color .15s;}
+  .sig-line:focus{border-bottom-color:var(--qred);}
+  .sig-note{font-size:.68rem;color:var(--text-lt);margin-top:5px;font-style:italic;}
+
+  /* COPY MENU */
+  .dup-menu{position:absolute;background:var(--white);border:1px solid var(--border);border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;min-width:210px;overflow:hidden;}
+  .dup-menu-item{padding:10px 14px;font-family:var(--cond);font-size:.76rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;color:var(--text);transition:background .12s;display:flex;align-items:center;gap:8px;}
+  .dup-menu-item:hover{background:var(--qred);color:#fff;}
+  .dup-menu-item+.dup-menu-item{border-top:1px solid var(--border);}
+  .dup-menu-sep{padding:5px 14px 3px;font-family:var(--cond);font-size:.58rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-lt);background:#fafaf9;border-top:1px solid var(--border);}
+  .dup-overlay{position:fixed;inset:0;z-index:199;}
+
+  /* SUMMARY CARD */
+  .summary-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--qred);border-radius:4px;padding:22px 28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+  .summary-total{display:flex;flex-direction:column;gap:4px;}
+  .summary-total .s-label{font-family:var(--cond);font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-lt);}
+  .summary-total .s-value{font-family:var(--cond);font-size:2.6rem;font-weight:700;color:var(--text);line-height:1;}
+  .summary-total .s-value span{font-size:1rem;color:var(--text-lt);font-weight:400;margin-left:4px;}
+  .summary-total .s-sub{font-family:var(--cond);font-size:.72rem;color:var(--text-lt);margin-top:2px;}
+  .summary-ot{background:var(--qred);color:#fff;border-radius:3px;padding:8px 16px;font-family:var(--cond);font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;display:none;}
+  .summary-ot.visible{display:block;}
+
+  /* QUICK FILL BUTTON */
+  .btn-green{background:#1a7a44;color:#fff;border-color:#1a7a44;}
+  .btn-green:hover{background:#155e34;border-color:#155e34;}
+
+  /* ACTIONS */
+  .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .btn{padding:10px 20px;border-radius:3px;font-family:var(--cond);font-size:.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:2px solid transparent;transition:all .15s;display:inline-flex;align-items:center;gap:7px;line-height:1;}
+  .btn-red{background:var(--qred);color:#fff;border-color:var(--qred);}
+  .btn-red:hover{background:var(--qred-dark);border-color:var(--qred-dark);}
+  .btn-navy{background:var(--qnavy);color:#fff;border-color:var(--qnavy);}
+  .btn-navy:hover{background:#141824;}
+  .btn-outline{background:transparent;color:var(--text);border-color:var(--border-dk);}
+  .btn-outline:hover{border-color:var(--text);}
+  .btn-ghost{background:transparent;color:var(--text-lt);border-color:var(--border);font-size:.72rem;}
+  .btn-ghost:hover{color:var(--text);border-color:var(--border-dk);}
+  .divider{width:1px;height:30px;background:var(--border);margin:0 4px;}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--qnavy);color:#fff;padding:11px 18px;border-radius:4px;font-family:var(--cond);font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-left:3px solid var(--qred);opacity:0;transform:translateY(8px);transition:all .22s;z-index:999;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateY(0);}
+
+  /* PRINT */
+  @media print {
+    body{background:#fff;}
+    .header{position:static;print-color-adjust:exact;-webkit-print-color-adjust:exact;}
+    .actions,.week-nav,.row-actions{display:none!important;}
+    .main{padding:12px;max-width:100%;}
+    .table-card thead tr,.totals-bar,.subtotals-bar,.week-divider td{print-color-adjust:exact;-webkit-print-color-adjust:exact;}
+    .info-card,.table-card,.sig-card,.summary-card{border:1px solid #ccc!important;box-shadow:none!important;}
+    input,select{border:1px solid #ccc!important;background:transparent!important;}
+    .sig-line{border-bottom:1.5px solid #888!important;}
+    .print-footer{display:block!important;text-align:center;font-size:.68rem;color:#999;margin-top:24px;}
+  }
+  .print-footer{display:none;}
+
+  @media(max-width:720px){
+    .info-card{grid-template-columns:1fr 1fr;}
+    .sig-card{grid-template-columns:1fr;}
+    .totals-bar,.subtotals-bar{grid-template-columns:1fr 1fr;}
+    .header-inner{flex-direction:column;gap:10px;padding:12px;align-items:flex-start;}
+    .table-card{overflow-x:auto;}
+    table{min-width:720px;}
+  }
+
+  /* PREVIEW MODAL */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(10,12,20,.72);z-index:500;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .2s;}
+  .modal-backdrop.open{opacity:1;pointer-events:all;}
+  .modal{background:#fff;border-radius:6px;width:100%;max-width:860px;box-shadow:0 24px 64px rgba(0,0,0,.35);transform:translateY(16px);transition:transform .22s;overflow:hidden;}
+  .modal-backdrop.open .modal{transform:translateY(0);}
+  .modal-toolbar{background:var(--qnavy);display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:2px solid var(--qred);}
+  .modal-toolbar-title{font-family:var(--cond);font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8a93a8;}
+  .modal-toolbar-actions{display:flex;gap:8px;align-items:center;}
+  .modal-btn{padding:7px 14px;border-radius:3px;font-family:var(--cond);font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:1.5px solid transparent;transition:all .14s;display:inline-flex;align-items:center;gap:6px;}
+  .modal-btn-red{background:var(--qred);color:#fff;border-color:var(--qred);}
+  .modal-btn-red:hover{background:var(--qred-dark);}
+  .modal-btn-ghost{background:transparent;color:#8a93a8;border-color:rgba(255,255,255,.15);}
+  .modal-btn-ghost:hover{color:#fff;border-color:rgba(255,255,255,.4);}
+  .preview-doc{padding:28px 32px;background:#fff;font-family:'Barlow',sans-serif;}
+
+  /* Preview internals */
+  .pv-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;border-bottom:3px solid var(--qnavy);margin-bottom:20px;}
+  .pv-logo svg{height:30px;width:auto;display:block;}
+  .pv-title{font-family:var(--cond);font-size:1.15rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--qnavy);}
+  .pv-period{font-family:var(--cond);font-size:.72rem;color:var(--text-lt);letter-spacing:.06em;margin-top:3px;}
+  .pv-info{display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:20px;border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+  .pv-info-cell{padding:10px 14px;border-right:1px solid var(--border);}
+  .pv-info-cell:last-child{border-right:none;}
+  .pv-lbl{font-family:var(--cond);font-size:.57rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-lt);margin-bottom:3px;}
+  .pv-val{font-size:.87rem;font-weight:600;}
+  .pv-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:.81rem;}
+  .pv-table thead tr{background:var(--qnavy);}
+  .pv-table thead th{font-family:var(--cond);font-size:.59rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a8498;padding:8px 10px;text-align:left;white-space:nowrap;}
+  .pv-table thead th:first-child{color:#e0e4ee;}
+  .pv-table tbody tr{border-bottom:1px solid var(--border);}
+  .pv-table tbody tr.pv-subrow{border-bottom:1px dashed #eceae6;}
+  .pv-table tbody tr.pv-empty{opacity:.35;}
+  .pv-table tbody td{padding:6px 10px;vertical-align:middle;}
+  .pv-day{font-family:var(--cond);font-weight:700;font-size:.82rem;white-space:nowrap;}
+  .pv-date{font-family:var(--cond);font-size:.7rem;color:var(--text-lt);}
+  .pv-hrs{font-family:var(--cond);font-weight:700;color:var(--green);}
+  .pv-hrs.pv-ot{color:var(--qred);}
+  .pv-type-leave{color:#1a6ab8;font-family:var(--cond);font-size:.74rem;font-weight:700;}
+  .pv-type-worked{color:var(--green);font-family:var(--cond);font-size:.74rem;font-weight:700;}
+  .pv-wk-divider td{background:var(--qnavy);padding:6px 10px!important;font-family:var(--cond);font-size:.59rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5a6480;}
+  .pv-wk-divider td span{color:#b0b8cc;}
+  .pv-subtotal{display:grid;grid-template-columns:repeat(4,1fr);background:#f0f1f4;border:1px solid var(--border);border-top:none;margin-bottom:4px;}
+  .pv-subtotal-cell{padding:8px 12px;border-right:1px solid var(--border);}
+  .pv-subtotal-cell:last-child{border-right:none;}
+  .ps-lbl{font-family:var(--cond);font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text-lt);margin-bottom:2px;}
+  .ps-val{font-family:var(--cond);font-size:.93rem;font-weight:700;color:var(--text);}
+  .pv-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));background:var(--qnavy);margin-bottom:22px;border-radius:0 0 3px 3px;}
+  .pv-total-cell{padding:11px 15px;border-right:1px solid rgba(255,255,255,.07);}
+  .pv-total-cell:last-child{border-right:none;}
+  .pt-lbl{font-family:var(--cond);font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#4a5268;margin-bottom:4px;}
+  .pt-val{font-family:var(--cond);font-size:1.15rem;font-weight:700;color:#fff;line-height:1;}
+  .pt-val.pt-ot{color:#f07058;}
+  .pv-sigs{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:8px;padding-top:20px;border-top:1px solid var(--border);}
+  .pv-sig-block .ps-label{font-family:var(--cond);font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-lt);margin-bottom:6px;}
+  .pv-sig-line{border-bottom:1.5px solid var(--border-dk);padding-bottom:5px;font-size:.9rem;min-height:28px;}
+  .pv-sig-note{font-size:.65rem;color:var(--text-lt);margin-top:4px;font-style:italic;}
+  .pv-footer{margin-top:24px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;}
+  .pv-footer-left,.pv-footer-right{font-family:var(--cond);font-size:.58rem;color:var(--text-lt);letter-spacing:.1em;text-transform:uppercase;}
+  @media print{.modal-backdrop{display:none!important;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="qfree-logo">
+        <svg viewBox="0 0 160 44" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Q-Free">
+          <rect width="160" height="44" rx="5" fill="#e52713"/>
+          <text x="12" y="33" font-family="'Barlow Condensed','Arial Narrow',Arial,sans-serif" font-weight="700" font-size="30" fill="#ffffff" letter-spacing="-0.5">Q-Free</text>
+        </svg>
+      </div>
+      <span class="doc-title">Employee Time Card</span>
+    </div>
+    <div class="week-nav">
+      <button onclick="shiftPeriod(-1)">&#8249;</button>
+      <span class="week-label" id="week-label"></span>
+      <button onclick="shiftPeriod(1)">&#8250;</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="section-label">Employee Information</div>
+  <div class="info-card">
+    <div class="field-group">
+      <label>Employee Name</label>
+      <input type="text" id="emp-name" placeholder="Full name" oninput="saveState()">
+    </div>
+    <div class="field-group">
+      <label>Manager / Supervisor</label>
+      <input type="text" id="emp-mgr" placeholder="Supervisor name" oninput="saveState()">
+    </div>
+    <div class="field-group">
+      <label>Pay Period</label>
+      <select id="pay-period" onchange="onPayPeriodChange()">
+        <option value="weekly">Weekly</option>
+        <option value="biweekly">Bi-Weekly</option>
+      </select>
+    </div>
+    <div class="field-group" style="grid-column:1/3;">
+      <label>Employment Status</label>
+      <select id="emp-status" onchange="saveState()" style="max-width:260px;">
+        <option value="fulltime">Full-Time</option>
+        <option value="parttime">Part-Time</option>
+        <option value="contractor">Contractor</option>
+        <option value="temp">Temp</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-label">Time Entries</div>
+  <div class="table-card">
+    <table id="time-table">
+      <thead>
+        <tr>
+          <th>Day</th>
+          <th>Clock In</th>
+          <th>Clock Out</th>
+          <th>Lunch (min)</th>
+          <th>Hour Type</th>
+          <th>Notes</th>
+          <th>Hours</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="entries-body"></tbody>
+    </table>
+  </div>
+
+  <div class="section-label">Summary</div>
+  <div class="summary-card">
+    <div class="summary-total">
+      <div class="s-label">Total Hours This Period</div>
+      <div class="s-value" id="summary-total">0.00<span>hrs</span></div>
+    </div>
+    <div class="summary-ot" id="summary-ot">⚠ Overtime</div>
+  </div>
+
+  <div class="section-label">Certification</div>
+  <div class="sig-card">
+    <div class="sig-box">
+      <label>Employee Signature</label>
+      <input type="text" class="sig-line" id="sig-emp" placeholder="Type full name to certify accuracy" oninput="saveState()">
+      <div class="sig-note">I certify that the hours recorded above are accurate and complete.</div>
+    </div>
+    <div class="sig-box">
+      <label>Supervisor Approval</label>
+      <input type="text" class="sig-line" id="sig-sup" placeholder="Supervisor name &amp; approval" oninput="saveState()">
+      <div class="sig-note">Approved for payroll processing.</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-red"     onclick="exportCSV()">&#8595; Export CSV</button>
+    <button class="btn btn-navy"    onclick="window.print()">&#128438; Print / Save PDF</button>
+    <button class="btn btn-outline" onclick="openPreview()">&#128065; Preview</button>
+    <button class="btn btn-green"   onclick="quickFill()">&#9889; Quick Fill 40h</button>
+    <button class="btn btn-green"   id="btn-qf80" onclick="quickFill80()" style="display:none;">&#9889; Quick Fill 80h</button>
+    <div class="divider"></div>
+    <button class="btn btn-outline" onclick="saveState();showToast('Draft saved')">&#128190; Save Draft</button>
+    <button class="btn btn-ghost"   onclick="clearAll()">&#10005; Clear Period</button>
+  </div>
+  <div class="print-footer">Q-Free &mdash; Employee Time Card &mdash; Confidential &mdash; For Payroll Use Only</div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-backdrop" id="preview-backdrop" onclick="handleBackdropClick(event)">
+  <div class="modal" id="preview-modal">
+    <div class="modal-toolbar">
+      <span class="modal-toolbar-title">&#128065; Timesheet Preview</span>
+      <div class="modal-toolbar-actions">
+        <button class="modal-btn modal-btn-red" onclick="printPreview()">&#128438; Print / Save PDF</button>
+        <button class="modal-btn modal-btn-ghost" onclick="closePreview()">&#10005; Close</button>
+      </div>
+    </div>
+    <div class="preview-doc" id="preview-doc"></div>
+  </div>
+</div>
+
+<div class="dup-overlay" id="dup-overlay" style="display:none;" onclick="closeDupMenu()"></div>
+<div class="dup-menu"    id="dup-menu"    style="display:none;"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONSTANTS ──────────────────────────────────────────────────────
+const DAYS  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const FIELDS = ['in','out','lunch','type','notes'];
+const HOUR_TYPES = ['','WORKED','BEREAV','CASUPPSL22','HOLIDAY','JURY','PARENTAL LEAVE','SICK','VACATION','VOLUNTEER','VOTE'];
+
+let periodOffset = 0;
+
+// ── STATE: subrows per day ─────────────────────────────────────────
+// daySubrows[uid] = number of sub-rows for that day (0 = just the primary row)
+const daySubrows = {};
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function isBiweekly(){ return document.getElementById('pay-period').value==='biweekly'; }
+
+function getMondayOf(off){
+  const now=new Date(), day=now.getDay();
+  const diff=day===0?-6:1-day;
+  const m=new Date(now); m.setDate(now.getDate()+diff+off*7); m.setHours(0,0,0,0); return m;
+}
+
+function getPeriodMonday(){
+  if(!isBiweekly()) return getMondayOf(periodOffset);
+  const epoch=new Date('2024-01-01T00:00:00');
+  const now=new Date(), day=now.getDay();
+  const diffToMon=day===0?-6:1-day;
+  const thisMon=new Date(now); thisMon.setDate(now.getDate()+diffToMon); thisMon.setHours(0,0,0,0);
+  const wks=Math.floor((thisMon-epoch)/(7*86400000));
+  const blk=Math.floor(wks/2);
+  const s=new Date(epoch); s.setDate(epoch.getDate()+(blk+periodOffset)*14); s.setHours(0,0,0,0); return s;
+}
+
+function formatDate(d){ return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function getPeriodKey(){ return 'p'+getPeriodMonday().toISOString().slice(0,10)+(isBiweekly()?'_bw':'_w'); }
+
+// All UIDs for a given day (primary + sub-rows)
+function getDayUids(w,d){
+  const base=`w${w}d${d}`;
+  const count=daySubrows[base]||0;
+  const uids=[base+'s0'];
+  for(let s=1;s<=count;s++) uids.push(base+'s'+s);
+  return uids;
+}
+
+// ── BUILD TABLE ────────────────────────────────────────────────────
+function buildTable(){
+  const biweekly=isBiweekly(), numWeeks=biweekly?2:1;
+  const mon1=getPeriodMonday();
+  const endDate=new Date(mon1); endDate.setDate(mon1.getDate()+numWeeks*7-1);
+  document.getElementById('week-label').textContent=
+    formatDate(mon1)+' \u2013 '+formatDate(endDate)+(biweekly?'  (Bi-Weekly)':'');
+
+  // Show/hide 80h quick fill button
+  const qf80=document.getElementById('btn-qf80');
+  if(qf80) qf80.style.display=biweekly?'':'none';
+
+  const tbody=document.getElementById('entries-body');
+  tbody.innerHTML='';
+
+  for(let w=0;w<numWeeks;w++){
+    const weekMon=new Date(mon1); weekMon.setDate(mon1.getDate()+w*7);
+    if(biweekly){
+      const weekSun=new Date(weekMon); weekSun.setDate(weekMon.getDate()+6);
+      const divRow=document.createElement('tr');
+      divRow.className='week-divider';
+      divRow.innerHTML=`<td colspan="8"><span>Week ${w+1}</span> &nbsp; ${formatDate(weekMon)} \u2013 ${formatDate(weekSun)}</td>`;
+      tbody.appendChild(divRow);
+    }
+    for(let d=0;d<7;d++){
+      const dayDate=new Date(weekMon); dayDate.setDate(weekMon.getDate()+d);
+      const isWeekend=d>=5;
+      const dateStr=dayDate.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit'});
+      const base=`w${w}d${d}`;
+      const subCount=daySubrows[base]||0;
+
+      // Primary row
+      appendDayRow(tbody,w,d,0,subCount,isWeekend,dateStr);
+      // Sub-rows
+      for(let s=1;s<=subCount;s++){
+        appendSubRow(tbody,w,d,s,subCount,isWeekend);
+      }
+    }
+  }
+  loadPeriodData();
+  recalcAll();
+}
+
+function makeTypeOptions(selectedVal){
+  return HOUR_TYPES.map(t=>`<option value="${t}"${t===selectedVal?' selected':''}>${t}</option>`).join('');
+}
+
+function appendDayRow(tbody,w,d,s,subCount,isWeekend,dateStr){
+  const base=`w${w}d${d}`, uid=base+'s'+s;
+  const tr=document.createElement('tr');
+  tr.className='day-group-first'+(isWeekend?' row-weekend':'');
+  tr.dataset.base=base; tr.dataset.s=s;
+  tr.innerHTML=`
+    <td class="day-cell"><span class="day-label">${SHORT[d]}<span class="date-num">${dateStr}</span></span></td>
+    <td><input type="time"   class="time-input"  data-field="in"    data-uid="${uid}" onchange="autoLunch('${uid}');recalcDay('${base}');saveState()"></td>
+    <td><input type="time"   class="time-input"  data-field="out"   data-uid="${uid}" onchange="autoLunch('${uid}');recalcDay('${base}');saveState()"></td>
+    <td><input type="number" class="lunch-input" data-field="lunch" data-uid="${uid}" min="0" max="480" placeholder="30" onchange="recalcDay('${base}');saveState()"></td>
+    <td><select class="type-select" data-field="type" data-uid="${uid}" onchange="updateTypeStyle(this);saveState()">${makeTypeOptions('')}</select></td>
+    <td><input type="text"   class="notes-input" data-field="notes" data-uid="${uid}" placeholder="Notes..." oninput="saveState()"></td>
+    <td><span class="hours-cell zero" id="hrs-${uid}">\u2014</span></td>
+    <td>
+      <div class="row-actions">
+        <button class="icon-btn btn-add"   onclick="addSubRow('${base}')"   title="Add sub-row">&#43; Add</button>
+        <button class="icon-btn btn-copy"  onclick="openDupMenu(event,'${base}')" title="Copy row">&#10697; Copy</button>
+        <button class="icon-btn btn-clear" onclick="clearDay('${base}')"   title="Clear all rows for this day">&#10006; Clear</button>
+      </div>
+    </td>`;
+  tbody.appendChild(tr);
+}
+
+function appendSubRow(tbody,w,d,s,subCount,isWeekend){
+  const base=`w${w}d${d}`, uid=base+'s'+s;
+  const tr=document.createElement('tr');
+  tr.className='day-subrow'+(isWeekend?' row-weekend':'');
+  tr.dataset.base=base; tr.dataset.s=s;
+  tr.innerHTML=`
+    <td class="day-cell" style="padding-left:24px!important;color:var(--text-lt);font-family:var(--cond);font-size:.72rem;font-weight:700;letter-spacing:.04em;">&nbsp;</td>
+    <td><input type="time"   class="time-input"  data-field="in"    data-uid="${uid}" onchange="autoLunch('${uid}');recalcDay('${base}');saveState()"></td>
+    <td><input type="time"   class="time-input"  data-field="out"   data-uid="${uid}" onchange="autoLunch('${uid}');recalcDay('${base}');saveState()"></td>
+    <td><input type="number" class="lunch-input" data-field="lunch" data-uid="${uid}" min="0" max="480" placeholder="30" onchange="recalcDay('${base}');saveState()"></td>
+    <td><select class="type-select" data-field="type" data-uid="${uid}" onchange="updateTypeStyle(this);saveState()">${makeTypeOptions('')}</select></td>
+    <td><input type="text"   class="notes-input" data-field="notes" data-uid="${uid}" placeholder="Notes..." oninput="saveState()"></td>
+    <td><span class="hours-cell zero" id="hrs-${uid}">\u2014</span></td>
+    <td>
+      <div class="row-actions">
+        <button class="icon-btn btn-del" onclick="deleteSubRow('${base}',${s})" title="Delete this sub-row">&#10005; Delete</button>
+      </div>
+    </td>`;
+  tbody.appendChild(tr);
+}
+
+// ── SUB-ROW MANAGEMENT ─────────────────────────────────────────────
+function addSubRow(base){
+  const m=base.match(/^w(\d+)d(\d+)$/);
+  if(!m) return;
+  const w=parseInt(m[1]), d=parseInt(m[2]);
+  const isWeekend=d>=5;
+  const count=(daySubrows[base]||0)+1;
+  daySubrows[base]=count;
+  const s=count; // index of the new sub-row
+  const uid=base+'s'+s;
+
+  // Find the last existing row for this base and insert directly after it
+  const existing=Array.from(document.querySelectorAll(`tr[data-base="${base}"]`));
+  const lastRow=existing[existing.length-1];
+  if(!lastRow) return;
+
+  const subTr=document.createElement('tr');
+  subTr.className='day-subrow'+(isWeekend?' row-weekend':'');
+  subTr.dataset.base=base; subTr.dataset.s=s;
+  subTr.innerHTML=`
+    <td class="day-cell" style="padding-left:24px!important;color:var(--text-lt);font-family:var(--cond);font-size:.72rem;">&nbsp;</td>
+    <td><input type="time"   class="time-input"  data-field="in"    data-uid="${uid}" onchange="autoLunch('${uid}');recalcDay('${base}');saveState()"></td>
+    <td><input type="time"   class="time-input"  data-field="out"   data-uid="${uid}" onchange="autoLunch('${uid}');recalcDay('${base}');saveState()"></td>
+    <td><input type="number" class="lunch-input" data-field="lunch" data-uid="${uid}" min="0" max="480" placeholder="30" onchange="recalcDay('${base}');saveState()"></td>
+    <td><select class="type-select" data-field="type" data-uid="${uid}" onchange="updateTypeStyle(this);saveState()">${makeTypeOptions('')}</select></td>
+    <td><input type="text"   class="notes-input" data-field="notes" data-uid="${uid}" placeholder="Notes..." oninput="saveState()"></td>
+    <td><span class="hours-cell zero" id="hrs-${uid}">\u2014</span></td>
+    <td>
+      <div class="row-actions">
+        <button class="icon-btn btn-del" onclick="deleteSubRow('${base}',${s})" title="Delete sub-row">&#10005; Delete</button>
+      </div>
+    </td>`;
+  lastRow.after(subTr);
+  saveState();
+  showToast('Sub-row added');
+}
+
+function deleteSubRow(base,sIdx){
+  // Collect all current values, remove sIdx, write back
+  const count=daySubrows[base]||0;
+  const allData=[];
+  for(let s=0;s<=count;s++){
+    const uid=base+'s'+s;
+    const row={};
+    FIELDS.forEach(f=>{
+      row[f]=document.querySelector(`[data-field="${f}"][data-uid="${uid}"]`)?.value||'';
+    });
+    allData.push(row);
+  }
+  allData.splice(sIdx,1);
+  daySubrows[base]=count-1;
+  rebuildDayRows(base);
+  // Restore remaining data
+  allData.forEach((row,s)=>{
+    const uid=base+'s'+s;
+    FIELDS.forEach(f=>{
+      const el=document.querySelector(`[data-field="${f}"][data-uid="${uid}"]`);
+      if(el){ el.value=row[f]||''; }
+    });
+  });
+  applyAllTypeStyles();
+  recalcDay(base);
+  saveState();
+  showToast('Sub-row deleted');
+}
+
+function clearDay(base){
+  const count=daySubrows[base]||0;
+  // Reset to single row, empty
+  daySubrows[base]=0;
+  rebuildDayRows(base);
+  recalcDay(base);
+  saveState();
+  showToast('Day cleared');
+}
+
+function rebuildDayRows(base){
+  // Parse w/d from base string like "w0d3"
+  const m=base.match(/^w(\d+)d(\d+)$/);
+  if(!m) return;
+  const w=parseInt(m[1]), d=parseInt(m[2]);
+  const biweekly=isBiweekly();
+  const isWeekend=d>=5;
+  const mon1=getPeriodMonday();
+  const weekMon=new Date(mon1); weekMon.setDate(mon1.getDate()+w*7);
+  const dayDate=new Date(weekMon); dayDate.setDate(weekMon.getDate()+d);
+  const dateStr=dayDate.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit'});
+  const subCount=daySubrows[base]||0;
+
+  // Remove all existing rows for this base
+  document.querySelectorAll(`tr[data-base="${base}"]`).forEach(r=>r.remove());
+
+  // Find the right insertion point (after week-divider or after prev day's rows)
+  // We'll find the tbody and insert in the right spot
+  const tbody=document.getElementById('entries-body');
+  const allRows=Array.from(tbody.rows);
+
+  // Find the reference node: the next row that is NOT part of this base
+  // We look for a row whose base != our base and comes after where our rows were
+  // Strategy: find insertion point by day order
+  let insertBefore=null;
+  for(const row of allRows){
+    const rb=row.dataset.base;
+    if(!rb) {
+      // week-divider - check if it belongs to a later week
+      // skip for now, keep looking
+      continue;
+    }
+    const rm=rb.match(/^w(\d+)d(\d+)$/);
+    if(!rm) continue;
+    const rw=parseInt(rm[1]), rd=parseInt(rm[2]);
+    if(rw>w||(rw===w&&rd>d)){ insertBefore=row; break; }
+  }
+
+  // Also look for week-dividers after our position
+  if(!insertBefore){
+    for(const row of allRows){
+      if(row.classList.contains('week-divider')){
+        // check if this divider is for week > w
+        const txt=row.textContent;
+        const wm=txt.match(/Week\s+(\d+)/);
+        if(wm&&parseInt(wm[1])>w+1){ insertBefore=row; break; }
+      }
+    }
+  }
+
+  // Insert primary row
+  const primaryTr=document.createElement('tr');
+  primaryTr.className='day-group-first'+(isWeekend?' row-weekend':'');
+  primaryTr.dataset.base=base; primaryTr.dataset.s=0;
+  primaryTr.innerHTML=`
+    <td class="day-cell"><span class="day-label">${SHORT[d]}<span class="date-num">${dateStr}</span></span></td>
+    <td><input type="time"   class="time-input"  data-field="in"    data-uid="${base}s0" onchange="autoLunch('${base}s0');recalcDay('${base}');saveState()"></td>
+    <td><input type="time"   class="time-input"  data-field="out"   data-uid="${base}s0" onchange="autoLunch('${base}s0');recalcDay('${base}');saveState()"></td>
+    <td><input type="number" class="lunch-input" data-field="lunch" data-uid="${base}s0" min="0" max="480" placeholder="30" onchange="recalcDay('${base}');saveState()"></td>
+    <td><select class="type-select" data-field="type" data-uid="${base}s0" onchange="updateTypeStyle(this);saveState()">${makeTypeOptions('')}</select></td>
+    <td><input type="text"   class="notes-input" data-field="notes" data-uid="${base}s0" placeholder="Notes..." oninput="saveState()"></td>
+    <td><span class="hours-cell zero" id="hrs-${base}s0">\u2014</span></td>
+    <td>
+      <div class="row-actions">
+        <button class="icon-btn btn-add"   onclick="addSubRow('${base}')"   title="Add sub-row">&#43; Add</button>
+        <button class="icon-btn btn-copy"  onclick="openDupMenu(event,'${base}')" title="Copy row">&#10697; Copy</button>
+        <button class="icon-btn btn-clear" onclick="clearDay('${base}')"   title="Clear this day">&#10006; Clear</button>
+      </div>
+    </td>`;
+  tbody.insertBefore(primaryTr, insertBefore||null);
+
+  // Insert sub-rows
+  let lastInserted=primaryTr;
+  for(let s=1;s<=subCount;s++){
+    const uid=base+'s'+s;
+    const subTr=document.createElement('tr');
+    subTr.className='day-subrow'+(isWeekend?' row-weekend':'');
+    subTr.dataset.base=base; subTr.dataset.s=s;
+    subTr.innerHTML=`
+      <td class="day-cell" style="padding-left:24px!important;color:var(--text-lt);font-family:var(--cond);font-size:.72rem;">&nbsp;</td>
+      <td><input type="time"   class="time-input"  data-field="in"    data-uid="${uid}" onchange="autoLunch('${uid}');recalcDay('${base}');saveState()"></td>
+      <td><input type="time"   class="time-input"  data-field="out"   data-uid="${uid}" onchange="autoLunch('${uid}');recalcDay('${base}');saveState()"></td>
+      <td><input type="number" class="lunch-input" data-field="lunch" data-uid="${uid}" min="0" max="480" placeholder="30" onchange="recalcDay('${base}');saveState()"></td>
+      <td><select class="type-select" data-field="type" data-uid="${uid}" onchange="updateTypeStyle(this);saveState()">${makeTypeOptions('')}</select></td>
+      <td><input type="text"   class="notes-input" data-field="notes" data-uid="${uid}" placeholder="Notes..." oninput="saveState()"></td>
+      <td><span class="hours-cell zero" id="hrs-${uid}">\u2014</span></td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn btn-del" onclick="deleteSubRow('${base}',${s})" title="Delete sub-row">&#10005; Delete</button>
+        </div>
+      </td>`;
+    lastInserted.after(subTr);
+    lastInserted=subTr;
+  }
+}
+
+// ── CALCULATE ──────────────────────────────────────────────────────
+function timeToMin(t){ if(!t) return null; const[h,m]=t.split(':').map(Number); return h*60+m; }
+
+function getRowHours(uid){
+  const get=f=>document.querySelector(`[data-field="${f}"][data-uid="${uid}"]`)?.value;
+  const inM=timeToMin(get('in')), outM=timeToMin(get('out'));
+  const lunch=parseFloat(document.querySelector(`[data-field="lunch"][data-uid="${uid}"]`)?.value)||0;
+  if(inM!==null&&outM!==null&&outM>inM) return Math.max(0,(outM-inM-lunch)/60);
+  return 0;
+}
+
+// Returns total hours for all sub-rows in a day
+function getDayTotalHours(base){
+  const count=daySubrows[base]||0;
+  let total=0;
+  for(let s=0;s<=count;s++) total+=getRowHours(base+'s'+s);
+  return total;
+}
+
+function recalcDay(base){
+  const count=daySubrows[base]||0;
+  // Recalc each row cell individually
+  for(let s=0;s<=count;s++){
+    const uid=base+'s'+s;
+    const hrs=getRowHours(uid);
+    const cell=document.getElementById('hrs-'+uid);
+    if(!cell) continue;
+    if(hrs>0){ cell.textContent=hrs.toFixed(2)+'h'; cell.className='hours-cell'+(hrs>10?' overtime':''); }
+    else { cell.textContent='\u2014'; cell.className='hours-cell zero'; }
+  }
+  recalcTotals();
+}
+
+function recalcAll(){
+  const biweekly=isBiweekly(), numWeeks=biweekly?2:1;
+  for(let w=0;w<numWeeks;w++) for(let d=0;d<7;d++) recalcDay(`w${w}d${d}`);
+}
+
+function updateTypeStyle(sel){
+  sel.classList.remove('is-worked','is-leave');
+  if(sel.value==='WORKED') sel.classList.add('is-worked');
+  else if(sel.value!=='') sel.classList.add('is-leave');
+}
+function applyAllTypeStyles(){ document.querySelectorAll('[data-field="type"]').forEach(updateTypeStyle); }
+
+function recalcTotals(){
+  const biweekly=isBiweekly(), numWeeks=biweekly?2:1, otLimit=biweekly?80:40;
+  let grandTotal=0;
+
+  for(let w=0;w<numWeeks;w++){
+    for(let d=0;d<7;d++){
+      const base=`w${w}d${d}`, count=daySubrows[base]||0;
+      for(let s=0;s<=count;s++){
+        const hrs=getRowHours(base+'s'+s);
+        if(hrs>0) grandTotal+=hrs;
+      }
+    }
+  }
+
+  const ot=Math.max(0,grandTotal-otLimit);
+  updateSummary(grandTotal, ot);
+}
+
+// ── COPY MENU ──────────────────────────────────────────────────────
+function openDupMenu(event, base){
+  event.stopPropagation();
+  const m=base.match(/^w(\d+)d(\d+)$/);
+  if(!m) return;
+  const week=parseInt(m[1]), day=parseInt(m[2]);
+  const biweekly=isBiweekly(), numWeeks=biweekly?2:1;
+  const menu=document.getElementById('dup-menu');
+  menu.innerHTML='';
+
+  // Copy primary row data to another day
+  const addSep=(label)=>{ const s=document.createElement('div'); s.className='dup-menu-sep'; s.textContent=label; menu.appendChild(s); };
+  const addItem=(label,fn)=>{ const i=document.createElement('div'); i.className='dup-menu-item'; i.innerHTML=label; i.onclick=fn; menu.appendChild(i); };
+
+  let hasNextDays=false;
+  for(let nd=day+1;nd<7;nd++){
+    if(!hasNextDays){ addSep('Copy to — this week'); hasNextDays=true; }
+    addItem(`&#8594; ${DAYS[nd]}`,()=>{ copyDayToDay(base,`w${week}d${nd}`); closeDupMenu(); });
+  }
+  if(week<numWeeks-1){
+    addSep('Copy to — week 2');
+    addItem(`&#8646; Same day, Week 2`,()=>{ copyDayToDay(base,`w${week+1}d${day}`); closeDupMenu(); });
+  }
+  addSep('Bulk fill');
+  addItem(`&#9776; Fill weekdays (Mon\u2013Fri), Wk ${week+1}`,()=>{
+    for(let nd=0;nd<5;nd++) if(nd!==day) copyDayToDay(base,`w${week}d${nd}`);
+    closeDupMenu(); showToast('Filled weekdays');
+  });
+  if(biweekly){
+    addItem(`&#9776; Fill all weekdays, both weeks`,()=>{
+      for(let nw=0;nw<2;nw++) for(let nd=0;nd<5;nd++) if(!(nw===week&&nd===day)) copyDayToDay(base,`w${nw}d${nd}`);
+      closeDupMenu(); showToast('Filled both weeks');
+    });
+  }
+
+  const btnRect=event.currentTarget.getBoundingClientRect();
+  menu.style.position='absolute';
+  menu.style.top=(btnRect.bottom+window.scrollY+4)+'px';
+  menu.style.left=Math.min(btnRect.left,window.innerWidth-220)+'px';
+  menu.style.display='block';
+  document.getElementById('dup-overlay').style.display='block';
+}
+
+function closeDupMenu(){
+  document.getElementById('dup-menu').style.display='none';
+  document.getElementById('dup-overlay').style.display='none';
+}
+
+// Copy all sub-rows from srcBase day to dstBase day
+function copyDayToDay(srcBase, dstBase){
+  const srcCount=daySubrows[srcBase]||0;
+  // Read all src data
+  const allData=[];
+  for(let s=0;s<=srcCount;s++){
+    const uid=srcBase+'s'+s, row={};
+    FIELDS.forEach(f=>{ row[f]=document.querySelector(`[data-field="${f}"][data-uid="${uid}"]`)?.value||''; });
+    allData.push(row);
+  }
+  // Set dst subrow count to match
+  daySubrows[dstBase]=srcCount;
+  rebuildDayRows(dstBase);
+  // Write data
+  allData.forEach((row,s)=>{
+    const uid=dstBase+'s'+s;
+    FIELDS.forEach(f=>{ const el=document.querySelector(`[data-field="${f}"][data-uid="${uid}"]`); if(el) el.value=row[f]||''; });
+  });
+  applyAllTypeStyles();
+  recalcDay(dstBase);
+  saveState();
+  showToast('Day copied');
+}
+
+// ── PERSIST ────────────────────────────────────────────────────────
+function saveState(){
+  const biweekly=isBiweekly(), numWeeks=biweekly?2:1;
+  const data={};
+  for(let w=0;w<numWeeks;w++) for(let d=0;d<7;d++){
+    const base=`w${w}d${d}`, count=daySubrows[base]||0;
+    data[base]={ subCount:count, rows:[] };
+    for(let s=0;s<=count;s++){
+      const uid=base+'s'+s, row={};
+      FIELDS.forEach(f=>{ row[f]=document.querySelector(`[data-field="${f}"][data-uid="${uid}"]`)?.value||''; });
+      data[base].rows.push(row);
+    }
+  }
+  const meta={
+    name:document.getElementById('emp-name').value,
+    mgr:document.getElementById('emp-mgr').value,
+    pay:document.getElementById('pay-period').value,
+    status:document.getElementById('emp-status').value,
+    sigEmp:document.getElementById('sig-emp').value,
+    sigSup:document.getElementById('sig-sup').value,
+  };
+  localStorage.setItem('qf_tc_meta',JSON.stringify(meta));
+  localStorage.setItem('qf_tc_'+getPeriodKey(),JSON.stringify(data));
+}
+
+function loadPeriodData(){
+  try{
+    const m=JSON.parse(localStorage.getItem('qf_tc_meta')||'{}');
+    document.getElementById('emp-name').value=m.name||'';
+    document.getElementById('emp-mgr').value=m.mgr||'';
+    document.getElementById('pay-period').value=m.pay||'weekly';
+    document.getElementById('emp-status').value=m.status||'fulltime';
+    document.getElementById('sig-emp').value=m.sigEmp||'';
+    document.getElementById('sig-sup').value=m.sigSup||'';
+  }catch(e){}
+  try{
+    const saved=JSON.parse(localStorage.getItem('qf_tc_'+getPeriodKey())||'null');
+    if(!saved) return;
+
+    const biweekly=isBiweekly(), numWeeks=biweekly?2:1;
+
+    // Detect old flat format: values are plain objects with field keys (in/out/lunch/type/notes)
+    // New format: values are { subCount, rows: [...] }
+    const firstVal=Object.values(saved)[0];
+    const isOldFormat = firstVal && !Array.isArray(firstVal.rows) && typeof firstVal.subCount==='undefined';
+
+    if(isOldFormat){
+      // Old format: saved[uid] = { in, out, lunch, type, notes }
+      // UIDs were like "w0d0" (no 's0' suffix) — map them into new primary-row slots
+      for(let w=0;w<numWeeks;w++) for(let d=0;d<7;d++){
+        const oldUid=`w${w}d${d}`;
+        const row=saved[oldUid];
+        if(!row) continue;
+        const newUid=oldUid+'s0';
+        FIELDS.forEach(f=>{ const el=document.querySelector(`[data-field="${f}"][data-uid="${newUid}"]`); if(el) el.value=row[f]||''; });
+      }
+    } else {
+      // New format: saved[base] = { subCount, rows: [{...}, ...] }
+      // First pass: restore subrow counts and rebuild DOM
+      for(let w=0;w<numWeeks;w++) for(let d=0;d<7;d++){
+        const base=`w${w}d${d}`;
+        const entry=saved[base];
+        if(entry && typeof entry.subCount==='number') daySubrows[base]=entry.subCount;
+      }
+      rebuildAllDayRows();
+
+      // Second pass: fill in field values
+      for(let w=0;w<numWeeks;w++) for(let d=0;d<7;d++){
+        const base=`w${w}d${d}`;
+        const entry=saved[base];
+        if(!entry || !Array.isArray(entry.rows)) continue;
+        entry.rows.forEach((row,s)=>{
+          const uid=base+'s'+s;
+          FIELDS.forEach(f=>{ const el=document.querySelector(`[data-field="${f}"][data-uid="${uid}"]`); if(el) el.value=row[f]||''; });
+        });
+      }
+    }
+
+    applyAllTypeStyles();
+  }catch(e){ console.error('loadPeriodData error:',e); }
+}
+
+function rebuildAllDayRows(){
+  const biweekly=isBiweekly(), numWeeks=biweekly?2:1;
+  for(let w=0;w<numWeeks;w++) for(let d=0;d<7;d++) rebuildDayRows(`w${w}d${d}`);
+}
+
+// ── NAVIGATION ─────────────────────────────────────────────────────
+function shiftPeriod(dir){
+  saveState();
+  // Reset daySubrows for new period
+  Object.keys(daySubrows).forEach(k=>delete daySubrows[k]);
+  periodOffset+=dir;
+  buildTable();
+}
+function onPayPeriodChange(){
+  Object.keys(daySubrows).forEach(k=>delete daySubrows[k]);
+  periodOffset=0; saveState(); buildTable();
+}
+
+// ── CLEAR ALL ──────────────────────────────────────────────────────
+function clearAll(){
+  localStorage.removeItem('qf_tc_'+getPeriodKey());
+  Object.keys(daySubrows).forEach(k=>delete daySubrows[k]);
+  buildTable();
+  showToast('Period cleared');
+}
+
+// ── EXPORT CSV ─────────────────────────────────────────────────────
+function exportCSV(){
+  const name=document.getElementById('emp-name').value||'Employee';
+  const mgr=document.getElementById('emp-mgr').value||'';
+  const biweekly=isBiweekly(), numWeeks=biweekly?2:1;
+  const mon1=getPeriodMonday();
+  const endDate=new Date(mon1); endDate.setDate(mon1.getDate()+numWeeks*7-1);
+
+  let csv='Q-Free Employee Time Card\n';
+  csv+=`Employee,${name}\nManager,${mgr}\nPeriod,${formatDate(mon1)} \u2013 ${formatDate(endDate)}\nType,${biweekly?'Bi-Weekly':'Weekly'}\n\n`;
+  csv+='Week,Day,Date,Sub-Row,Clock In,Clock Out,Lunch (min),Hour Type,Notes,Hours\n';
+
+  let grandTotal=0, grandWorked=0;
+  const otLimit=biweekly?80:40;
+
+  for(let w=0;w<numWeeks;w++){
+    const weekMon=new Date(mon1); weekMon.setDate(mon1.getDate()+w*7);
+    for(let d=0;d<7;d++){
+      const base=`w${w}d${d}`, count=daySubrows[base]||0;
+      const dayDate=new Date(weekMon); dayDate.setDate(weekMon.getDate()+d);
+      for(let s=0;s<=count;s++){
+        const uid=base+'s'+s;
+        const get=f=>document.querySelector(`[data-field="${f}"][data-uid="${uid}"]`)?.value||'';
+        const hrs=getRowHours(uid);
+        const t=get('type');
+        if(hrs>0){ grandTotal+=hrs; if(t==='WORKED') grandWorked+=hrs; }
+        csv+=`${w+1},${DAYS[d]},${dayDate.toLocaleDateString('en-US')},${s===0?'Primary':'Sub-'+(s)},${get('in')},${get('out')},${get('lunch')},${t},"${get('notes')}",${hrs>0?hrs.toFixed(2):''}\n`;
+      }
+    }
+  }
+  const grandLeave=grandTotal-grandWorked, ot=Math.max(0,grandWorked-otLimit);
+  csv+=`\nTotal Hours,${grandTotal.toFixed(2)}\nWorked Hours,${grandWorked.toFixed(2)}\nLeave Hours,${grandLeave.toFixed(2)}\n`;
+  if(ot>0) csv+=`Overtime,${ot.toFixed(2)}\n`;
+  csv+=`\nEmployee Signature,${document.getElementById('sig-emp').value}\nSupervisor Approval,${document.getElementById('sig-sup').value}\n`;
+  csv+=`\nExported,${new Date().toLocaleString()}\nQ-Free \u2014 For Payroll Use Only\n`;
+
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`QFree_TimeCard_${name.replace(/\s+/g,'_')}_${mon1.toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('CSV exported');
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── PREVIEW / PRINT ────────────────────────────────────────────────
+// Single shared CSS for the timesheet document (used by both modal and print window)
+const TIMESHEET_CSS=`
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Barlow',sans-serif;background:#fff;padding:28px 32px;color:#1a1f2e;}
+  @media print{body{padding:12px 16px;}}
+  .pv-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:3px solid #1a1f2e;margin-bottom:18px;}
+  .pv-logo svg{height:28px;width:auto;display:block;}
+  .pv-title{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#1a1f2e;}
+  .pv-period{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;color:#9098aa;letter-spacing:.06em;margin-top:3px;}
+  .pv-info{display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:18px;border:1px solid #dddbd6;border-radius:3px;overflow:hidden;}
+  .pv-info-cell{padding:9px 13px;border-right:1px solid #dddbd6;}.pv-info-cell:last-child{border-right:none;}
+  .pv-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.57rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9098aa;margin-bottom:3px;}
+  .pv-val{font-size:.87rem;font-weight:600;}
+  .pv-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:.8rem;}
+  .pv-table thead tr{background:#1a1f2e;print-color-adjust:exact;-webkit-print-color-adjust:exact;}
+  .pv-table thead th{font-family:'Barlow Condensed',sans-serif;font-size:.59rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a8498;padding:8px 10px;text-align:left;white-space:nowrap;}
+  .pv-table thead th:first-child{color:#e0e4ee;}
+  .pv-table tbody tr{border-bottom:1px solid #dddbd6;}
+  .pv-table tbody tr.pv-subrow{border-bottom:1px dashed #eceae6;}
+  .pv-table tbody tr.pv-empty{opacity:.35;}
+  .pv-table tbody td{padding:6px 10px;vertical-align:middle;}
+  .pv-day{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.81rem;white-space:nowrap;}
+  .pv-date{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;color:#9098aa;}
+  .pv-hrs{font-family:'Barlow Condensed',sans-serif;font-weight:700;color:#1a8a4a;}
+  .pv-hrs.pv-ot{color:#e52713;}
+  .pv-type-leave{color:#1a6ab8;font-family:'Barlow Condensed',sans-serif;font-size:.74rem;font-weight:700;}
+  .pv-type-worked{color:#1a8a4a;font-family:'Barlow Condensed',sans-serif;font-size:.74rem;font-weight:700;}
+  .pv-wk-divider td{background:#1a1f2e;padding:6px 10px!important;font-family:'Barlow Condensed',sans-serif;font-size:.59rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5a6480;print-color-adjust:exact;-webkit-print-color-adjust:exact;}
+  .pv-wk-divider td span{color:#b0b8cc;}
+  .pv-totals-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));background:#1a1f2e;margin-bottom:22px;border-radius:3px;print-color-adjust:exact;-webkit-print-color-adjust:exact;}
+  .pv-total-cell{padding:11px 15px;border-right:1px solid rgba(255,255,255,.07);}
+  .pv-total-cell:last-child{border-right:none;}
+  .pt-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#4a5268;margin-bottom:4px;}
+  .pt-val{font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:700;color:#fff;line-height:1;}
+  .pt-val.pt-ot{color:#f07058;}
+  .pv-sigs{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:8px;padding-top:18px;border-top:1px solid #dddbd6;}
+  .ps-label{font-family:'Barlow Condensed',sans-serif;font-size:.59rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9098aa;margin-bottom:6px;}
+  .pv-sig-line{border-bottom:1.5px solid #b8b4ac;padding-bottom:5px;font-size:.9rem;min-height:28px;}
+  .pv-sig-note{font-size:.63rem;color:#9098aa;margin-top:4px;font-style:italic;}
+  .pv-footer{margin-top:22px;padding-top:10px;border-top:1px solid #dddbd6;display:flex;justify-content:space-between;}
+  .pv-footer-left,.pv-footer-right{font-family:'Barlow Condensed',sans-serif;font-size:.58rem;color:#9098aa;letter-spacing:.1em;text-transform:uppercase;}
+`;
+
+// Builds the inner HTML of the timesheet document — shared by modal preview and print window
+function buildTimesheetHTML(){
+  const biweekly=isBiweekly(), numWeeks=biweekly?2:1;
+  const mon1=getPeriodMonday();
+  const endDate=new Date(mon1); endDate.setDate(mon1.getDate()+numWeeks*7-1);
+  const name=document.getElementById('emp-name').value||'—';
+  const mgr=document.getElementById('emp-mgr').value||'—';
+  const statusEl=document.getElementById('emp-status');
+  const status=statusEl.options[statusEl.selectedIndex]?.text||'—';
+  const pay=biweekly?'Bi-Weekly':'Weekly';
+  const sigEmp=document.getElementById('sig-emp').value||'';
+  const sigSup=document.getElementById('sig-sup').value||'';
+  const otLimit=biweekly?80:40;
+
+  let tableRows='', grandTotal=0;
+
+  for(let w=0;w<numWeeks;w++){
+    const weekMon=new Date(mon1); weekMon.setDate(mon1.getDate()+w*7);
+    const weekSun=new Date(weekMon); weekSun.setDate(weekMon.getDate()+6);
+
+    if(biweekly) tableRows+=`<tr class="pv-wk-divider"><td colspan="7"><span>Week ${w+1}</span> &nbsp; ${formatDate(weekMon)} &ndash; ${formatDate(weekSun)}</td></tr>`;
+
+    for(let d=0;d<7;d++){
+      const base=`w${w}d${d}`, count=daySubrows[base]||0;
+      const dayDate=new Date(weekMon); dayDate.setDate(weekMon.getDate()+d);
+      const dateStr=dayDate.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit'});
+      const isWeekend=d>=5, rowBg=isWeekend?'background:#f9f9f8;':'';
+
+      for(let s=0;s<=count;s++){
+        const uid=base+'s'+s;
+        const get=f=>document.querySelector(`[data-field="${f}"][data-uid="${uid}"]`)?.value||'';
+        const inVal=get('in'), outVal=get('out'), lunch=get('lunch'), type=get('type'), notes=get('notes');
+        const hrs=getRowHours(uid);
+        if(hrs>0) grandTotal+=hrs;
+        const hrsDisplay=hrs>0?hrs.toFixed(2)+'h':'&mdash;';
+        const hrsClass=hrs>10?'pv-hrs pv-ot':'pv-hrs';
+        const typeClass=type==='WORKED'?'pv-type-worked':(type?'pv-type-leave':'');
+        const isEmpty=!inVal&&!outVal;
+        const isSubrow=s>0;
+        const rowClass=(isEmpty?'pv-empty':'')+(isSubrow?' pv-subrow':'');
+        const dayCell=isSubrow
+          ?`<td style="padding-left:20px;color:#9098aa;font-size:.7rem;">&nbsp;</td>`
+          :`<td class="pv-day">${SHORT[d]}</td>`;
+
+        tableRows+=`<tr class="${rowClass}" style="${rowBg}">
+          ${dayCell}
+          <td class="pv-date">${s===0?dateStr:''}</td>
+          <td>${inVal||'&mdash;'}</td>
+          <td>${outVal||'&mdash;'}</td>
+          <td>${lunch?lunch+' min':'&mdash;'}</td>
+          <td class="${typeClass}">${type||''}</td>
+          <td class="${hrsClass}">${hrsDisplay}</td>
+        </tr>`;
+        if(notes) tableRows+=`<tr style="${rowBg}${isEmpty?'opacity:.35;':''}"><td colspan="7" style="padding:2px 10px 6px ${isSubrow?'28':'18'}px;font-size:.73rem;color:#7a8498;font-style:italic;">${notes}</td></tr>`;
+      }
+    }
+  }
+
+  const ot=Math.max(0,grandTotal-otLimit);
+  let totCells=`
+    <div class="pv-total-cell"><div class="pt-lbl">Total Hours</div><div class="pt-val">${grandTotal.toFixed(2)}</div></div>`;
+  if(ot>0) totCells+=`<div class="pv-total-cell"><div class="pt-lbl">Overtime</div><div class="pt-val pt-ot">${ot.toFixed(2)}</div></div>`;
+
+  const logoSVG=`<svg viewBox="0 0 160 44" xmlns="http://www.w3.org/2000/svg"><rect width="160" height="44" rx="5" fill="#e52713"/><text x="12" y="33" font-family="'Barlow Condensed','Arial Narrow',Arial,sans-serif" font-weight="700" font-size="30" fill="#ffffff" letter-spacing="-0.5">Q-Free</text></svg>`;
+
+  return `
+    <div class="pv-header">
+      <div class="pv-logo">${logoSVG}</div>
+      <div style="text-align:right;">
+        <div class="pv-title">Employee Time Card</div>
+        <div class="pv-period">${formatDate(mon1)} &ndash; ${formatDate(endDate)} &nbsp;&bull;&nbsp; ${pay}</div>
+      </div>
+    </div>
+    <div class="pv-info">
+      <div class="pv-info-cell"><div class="pv-lbl">Employee</div><div class="pv-val">${name}</div></div>
+      <div class="pv-info-cell"><div class="pv-lbl">Manager</div><div class="pv-val">${mgr}</div></div>
+      <div class="pv-info-cell"><div class="pv-lbl">Status</div><div class="pv-val">${status}</div></div>
+      <div class="pv-info-cell"><div class="pv-lbl">Pay Period</div><div class="pv-val">${pay}</div></div>
+    </div>
+    <table class="pv-table">
+      <thead><tr><th>Day</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Lunch</th><th>Hour Type</th><th>Hours</th></tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+    <div class="pv-totals-row">${totCells}</div>
+    <div class="pv-sigs">
+      <div><div class="ps-label">Employee Signature</div><div class="pv-sig-line">${sigEmp}</div><div class="pv-sig-note">I certify that the hours recorded above are accurate and complete.</div></div>
+      <div><div class="ps-label">Supervisor Approval</div><div class="pv-sig-line">${sigSup}</div><div class="pv-sig-note">Approved for payroll processing.</div></div>
+    </div>
+    <div class="pv-footer">
+      <span class="pv-footer-left">Q-Free &mdash; Employee Time Card &mdash; Confidential</span>
+      <span class="pv-footer-right">Generated ${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>
+    </div>`;
+}
+
+function openPreview(){
+  saveState();
+  const html=buildTimesheetHTML();
+  document.getElementById('preview-doc').innerHTML=`<style>${TIMESHEET_CSS}</style>${html}`;
+  document.getElementById('preview-backdrop').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closePreview(){ document.getElementById('preview-backdrop').classList.remove('open'); document.body.style.overflow=''; }
+function handleBackdropClick(e){ if(e.target===document.getElementById('preview-backdrop')) closePreview(); }
+
+function printPreview(){
+  const html=buildTimesheetHTML();
+  const win=window.open('','_blank','width=900,height=700');
+  win.document.write(`<!DOCTYPE html><html><head><title>Q-Free Time Card</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>${TIMESHEET_CSS}</style>
+  </head><body>${html}</body></html>`);
+  win.document.close(); win.focus();
+  setTimeout(()=>win.print(),600);
+}
+
+// ── AUTO LUNCH ─────────────────────────────────────────────────────
+// Auto-fills 30 min lunch when either clock in or out is set, only if lunch is still empty
+function autoLunch(uid){
+  const lunchEl=document.querySelector(`[data-field="lunch"][data-uid="${uid}"]`);
+  if(!lunchEl||lunchEl.value!=='') return; // don't overwrite if already set
+  const inVal =document.querySelector(`[data-field="in"][data-uid="${uid}"]`)?.value;
+  const outVal=document.querySelector(`[data-field="out"][data-uid="${uid}"]`)?.value;
+  if(inVal||outVal) lunchEl.value=30;
+}
+
+// ── SUMMARY ────────────────────────────────────────────────────────
+function updateSummary(totalHrs, ot){
+  const el=document.getElementById('summary-total');
+  const otBadge=document.getElementById('summary-ot');
+  if(!el) return;
+  el.innerHTML=`${totalHrs.toFixed(2)}<span>hrs</span>`;
+  if(otBadge) otBadge.classList.toggle('visible', ot>0);
+}
+
+// ── QUICK FILL ─────────────────────────────────────────────────────
+function fillWeek(weekIdx){
+  for(let d=0;d<7;d++){
+    const base=`w${weekIdx}d${d}`;
+    daySubrows[base]=0;
+    rebuildDayRows(base);
+    const uid=base+'s0';
+    const setF=(f,v)=>{ const el=document.querySelector(`[data-field="${f}"][data-uid="${uid}"]`); if(el) el.value=v; };
+    if(d<5){
+      // Weekday — fill 7:00–15:30, 30 min lunch, WORKED
+      setF('in','07:00');
+      setF('out','15:30');
+      setF('lunch','30');
+      setF('type','WORKED');
+    } else {
+      // Weekend — leave blank, Hour Type blank
+      setF('in',''); setF('out',''); setF('lunch',''); setF('type',''); setF('notes','');
+    }
+    const typeEl=document.querySelector(`[data-field="type"][data-uid="${uid}"]`);
+    if(typeEl) updateTypeStyle(typeEl);
+    recalcDay(base);
+  }
+}
+
+function quickFill(){
+  fillWeek(0);
+  saveState();
+  showToast('Quick Fill \u2014 40h week applied');
+}
+
+function quickFill80(){
+  fillWeek(0);
+  fillWeek(1);
+  saveState();
+  showToast('Quick Fill \u2014 80h period applied');
+}
+
+// ── INIT ───────────────────────────────────────────────────────────
+buildTable();
+</script>
+</body>
+</html>
